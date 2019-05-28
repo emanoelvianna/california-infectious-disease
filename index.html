@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html ng-controller="AppCtrl as ctrl" ng-app="app">
 
 <head>
     <title>Infectious Diseases-related disease cases among California</title>
@@ -9,17 +9,40 @@
     <meta name="description" content="">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
     <link rel="stylesheet" href="app/styles.css" type="text/css">
+    <link href="node_modules/angular-material/angular-material.min.css" rel="stylesheet" />
     <!-- remote application dependencies -->
     <script src="node_modules/d3/build/d3.min.js"></script>
     <script src="node_modules/d3-svg-legend/d3-legend.min.js"></script>
     <script src="node_modules/topojson/dist/topojson.min.js"></script>
+    <script src="node_modules/angular/angular.min.js"></script>
+    <script src="node_modules/angular-animate/angular-animate.min.js"></script>
+    <script src="node_modules/angular-aria/angular-aria.min.js"></script>
 </head>
 
 <body>
-    <h3>Infectious Diseases-related disease cases among California</h3>
-    <div id="map"></div>
+    <div layout-align="center center" layout="column">
+        <h3 class="md-headline">Infectious Diseases-related disease cases among California</h3>
+    </div>
+    <div layout="row" layout-xs="column">
+        <div flex>
+            <div id="map"></div>
+        </div>
+        <div flex>
+            <md-input-container>
+                <label>Select Disease</label>
+                <md-select ng-model="ctrl.diseaseSelected">
+                    <md-option><em>None</em></md-option>
+                    <md-option ng-repeat="disease in ctrl.diseases" ng-value="state.abbrev">
+                        {{disease}}
+                    </md-option>
+                </md-select>
+            </md-input-container>
+        </div>
+    </div>
     <!-- local application dependencies -->
+    <script src="app/module.js"></script>
     <script src="app/application.js"></script>
+    <script src="node_modules/angular-material/angular-material.min.js"></script>
 </body>
 
 </html>

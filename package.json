@@ -23,7 +23,11 @@
         "d3": "4.0.0",
         "d3-svg-legend": "2.25.6",
         "d3-simple-slider": "1.5.1",
-        "topojson": "3.0.2"
+        "topojson": "3.0.2",
+        "angular": "1.5.8",
+        "angular-animate": "1.5.8",
+        "angular-aria": "1.5.8",
+        "angular-material": "1.1.1"
     },
     "devDependencies": {
         "browser-sync": "^2.26.3",
