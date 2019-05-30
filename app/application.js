@@ -20,9 +20,30 @@
       self.$onInit = onInit;
 
       function onInit() {
-        _buildMap();
-        _loadDataOfDiseases();
-        _filteredSelected('Amebiasis', '2005');
+       // _buildMap();
+        //_loadDataOfDiseases();
+        //_filteredSelected('Amebiasis', '2005');
+        name();
+      }
+
+      function name() {
+        var chart = dc.rowChart("#test");
+        d3.csv('data/temp.csv').then(function (experiments) {
+          experiments.forEach(function (x) {
+            x.Speed = +x.Speed;
+          });
+          var ndx = crossfilter(experiments),
+            runDimension = ndx.dimension(function (d) { return +d.Run; }),
+            speedSumGroup = runDimension.group().reduceSum(function (d) { return d.Speed * d.Run / 1000; });
+          chart
+            .width(768)
+            .height(480)
+            .x(d3.scaleLinear().domain([6, 20]))
+            .elasticX(true)
+            .dimension(runDimension)
+            .group(speedSumGroup)
+            .render();
+        });
       }
 
       function _buildMap() {
@@ -41,7 +62,7 @@
           .attr('width', width)
           .attr('height', height);
 
-        d3.json('data/california-map.json', function (error, ca) {
+        d3.json('data/california-map.json').then(function (ca) {
           svg.append('path')
             .datum(topojson.feature(ca, ca.objects.subunits))
             .attr('class', 'land')
@@ -91,7 +112,7 @@
       }
 
       function _loadDataOfDiseases() {
-        d3.csv('data/infectious-disease-data.csv', function (error, data) {
+        d3.csv('data/infectious-disease-data.csv').then(function (data) {
           data.map(function (d) {
             if (!self.diseases.includes(d.Disease))
               self.diseases.push(d.Disease);
@@ -100,7 +121,7 @@
       }
 
       function _filteredSelected(diseaseSelected, yearSelected) {
-        d3.csv('data/infectious-disease-data.csv', function (error, diseases) {
+        d3.csv('data/infectious-disease-data.csv').then(function (diseases) {
           var filteredDiseases = diseases.filter(function (data) {
             if (_condition(diseaseSelected, yearSelected, data))
               return data;
