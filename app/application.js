@@ -20,30 +20,9 @@
       self.$onInit = onInit;
 
       function onInit() {
-       // _buildMap();
-        //_loadDataOfDiseases();
-        //_filteredSelected('Amebiasis', '2005');
-        name();
-      }
-
-      function name() {
-        var chart = dc.rowChart("#test");
-        d3.csv('data/temp.csv').then(function (experiments) {
-          experiments.forEach(function (x) {
-            x.Speed = +x.Speed;
-          });
-          var ndx = crossfilter(experiments),
-            runDimension = ndx.dimension(function (d) { return +d.Run; }),
-            speedSumGroup = runDimension.group().reduceSum(function (d) { return d.Speed * d.Run / 1000; });
-          chart
-            .width(768)
-            .height(480)
-            .x(d3.scaleLinear().domain([6, 20]))
-            .elasticX(true)
-            .dimension(runDimension)
-            .group(speedSumGroup)
-            .render();
-        });
+        _buildMap();
+        _loadDataOfDiseases();
+        _filteredSelected('Amebiasis', '2005');
       }
 
       function _buildMap() {

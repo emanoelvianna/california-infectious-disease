@@ -26,7 +26,22 @@
     <div layout-align="center center" layout="column">
         <h3 class="md-headline">Infectious Diseases-related disease cases among California</h3>
     </div>
-    <div id="test"></div>
+    <div layout="row" layout-xs="column">
+        <div flex>
+            <div id="map"></div>
+        </div>
+        <div flex>
+            <md-input-container>
+                <label>Select Disease</label>
+                <md-select ng-model="ctrl.diseaseSelected">
+                    <md-option><em>None</em></md-option>
+                    <md-option ng-repeat="disease in ctrl.diseases" ng-value="state.abbrev">
+                        {{disease}}
+                    </md-option>
+                </md-select>
+            </md-input-container>
+        </div>
+    </div>
     <!-- local application dependencies -->
     <script src="app/module.js"></script>
     <script src="app/application.js"></script>
