@@ -20,9 +20,25 @@
       self.$onInit = onInit;
 
       function onInit() {
-        _buildMap();
         _loadDataOfDiseases();
+        _buildDiseasesOptions();
+        _buildMap();
         _filteredSelected('Amebiasis', '2005');
+      }
+
+      function _buildDiseasesOptions() {
+        var chart = dc.rowChart("#test");
+        d3.csv("data/temp.csv").then(function (experiments) {
+          var ndx = crossfilter(experiments),
+            runDimension = ndx.dimension(function (d) { return + d.Run; }),
+            speedSumGroup = runDimension.group().reduceSum(function (d) { return d.Speed * d.Run / 1000; });
+          chart
+            .width(300)
+            .height(400)
+            .dimension(runDimension)
+            .group(speedSumGroup)
+            .render();
+        });
       }
 
       function _buildMap() {
@@ -95,7 +111,7 @@
           data.map(function (d) {
             if (!self.diseases.includes(d.Disease))
               self.diseases.push(d.Disease);
-          })
+          });
         });
       }
 
