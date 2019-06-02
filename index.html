@@ -11,35 +11,38 @@
 </head>
 
 <body>
-    <div class="container">
-
-        <div layout-align="center center" layout="column">
-            <h3 class="md-headline">Infectious Diseases-related disease cases among California</h3>
+    <h2 class="md-toolbar-tools" layout-align="center center">
+        <span>Infectious Diseases-related disease cases among California</span>
+    </h2>
+    <md-divider></md-divider>
+    <div layout="row" layout-align="center center">
+        <div flex>
+            <md-radio-group ng-model="ctrl.diseaseSelected" ng-change="ctrl.diseases">
+                <md-radio-button ng-repeat="disease in ctrl.diseases" ng-value="disease">
+                    {{ disease }}
+                </md-radio-button>
+            </md-radio-group>
         </div>
-        <div layout="row" layout-xs="column">
-            <div flex>
-                <h3 class=".md-subhead">Select Disease:</h3>
-                <div id="test"></div>
-            </div>
-            <div flex>
-                <div id="map"></div>
-            </div>
+        <div flex>
+            <div id="map"></div>
         </div>
-        <!-- remote application dependencies -->
-        <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>
-        <script type="text/javascript" src="node_modules/fetch/lib/fetch.js"></script>
-        <script type="text/javascript" src="node_modules/d3/dist/d3.min.js"></script>
-        <script type="text/javascript" src="node_modules/crossfilter/crossfilter.min.js"></script>
-        <script type="text/javascript" src="node_modules/dc/dc.min.js"></script>
-        <script type="text/javascript" src="node_modules/topojson/dist/topojson.min.js"></script>
-        <script type="text/javascript" src="node_modules/angular/angular.min.js"></script>
-        <script type="text/javascript" src="node_modules/angular-animate/angular-animate.min.js"></script>
-        <script type="text/javascript" src="node_modules/angular-aria/angular-aria.min.js"></script>
-        <!-- local application dependencies -->
-        <script type="text/javascript" src="app/module.js"></script>
-        <script type="text/javascript" src="app/application.js"></script>
-        <script type="text/javascript" src="node_modules/angular-material/angular-material.min.js"></script>
     </div>
+    <!-- remote application dependencies -->
+    <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>
+    <script type="text/javascript" src="node_modules/fetch/lib/fetch.js"></script>
+    <script type="text/javascript" src="node_modules/d3/dist/d3.min.js"></script>
+    <script type="text/javascript" src="node_modules/crossfilter/crossfilter.min.js"></script>
+    <script type="text/javascript" src="node_modules/dc/dc.min.js"></script>
+    <script type="text/javascript" src="node_modules/topojson/dist/topojson.min.js"></script>
+    <script type="text/javascript" src="node_modules/angular/angular.min.js"></script>
+    <script type="text/javascript" src="node_modules/angular-animate/angular-animate.min.js"></script>
+    <script type="text/javascript" src="node_modules/angular-aria/angular-aria.min.js"></script>
+    <script type="text/javascript" src="node_modules/angular-material/angular-material.min.js"></script>
+    <!-- local application dependencies -->
+    <script type="text/javascript" src="app/module.js"></script>
+    <script type="text/javascript" src="app/application.js"></script>
+    <script type="text/javascript" src="app/resource/module.js"></script>
+    <script type="text/javascript" src="app/resource/loading-screen-service.js"></script>
 </body>
 
 </html>

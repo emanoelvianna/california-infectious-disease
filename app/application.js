@@ -21,11 +21,19 @@
 
       function onInit() {
         _loadDataOfDiseases();
-        _buildDiseasesOptions();
+        _setDiseaseList();
+        // _buildDiseasesOptions();
         _buildMap();
         _filteredSelected('Amebiasis', '2005');
       }
 
+      function _loadDataOfDiseases() {
+        d3.csv('data/infectious-disease-data.csv').then(function (data) {
+          self.infectiousDiseaseData = data;
+        });
+      }
+
+      // TODO:
       function _buildDiseasesOptions() {
         var chart = dc.rowChart("#test");
         d3.csv("data/temp.csv").then(function (experiments) {
@@ -106,13 +114,12 @@
 
       }
 
-      function _loadDataOfDiseases() {
-        d3.csv('data/infectious-disease-data.csv').then(function (data) {
-          data.map(function (d) {
-            if (!self.diseases.includes(d.Disease))
-              self.diseases.push(d.Disease);
-          });
+      function _setDiseaseList() {
+        self.infectiousDiseaseDat.map(function (d) {
+          if (!self.diseases.includes(d.Disease))
+            self.diseases.push(d.Disease);
         });
+        self.diseaseSelected = self.diseases[0];
       }
 
       function _filteredSelected(diseaseSelected, yearSelected) {
@@ -130,8 +137,10 @@
                     return '#cecece';
                   } else if (filteredDiseases[i]['CI.upper'] < '2.801') {
                     return '#ffcc5c'
-                  } else {
+                  } else if (filteredDiseases[i]['CI.upper'] < '5.801') {
                     return '#ff6f69';
+                  } else {
+                    return '#2db7e2';
                   }
                 }
               }
