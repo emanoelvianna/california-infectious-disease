@@ -8,8 +8,8 @@
     Service.$inject = [];
 
     function Service() {
-        const LOGO_SOURCE = 'app/stylesheet/loading.gif';
-        const BACKGROUND_COLOR = '#cccccc';
+        const LOGO_SOURCE = '';
+        const BACKGROUND_COLOR = '#616161';
 
         var self = this;
         /* Lifecycle hooks */
@@ -41,7 +41,7 @@
             self.loading_screen = pleaseWait({
                 logo: LOGO_SOURCE,
                 backgroundColor: BACKGROUND_COLOR,
-                loadingHtml: "<p class='loading-message' style='color:#333333;'>please wait..</p>" +
+                loadingHtml: "<p style='color:#ffffff;'>please wait..</p>" +
                     "<div class='sk-circle'>" +
                     "<div class='sk-circle1 sk-child'></div>" +
                     "<div class='sk-circle2 sk-child'></div>" +

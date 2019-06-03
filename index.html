@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-controller="AppCtrl as ctrl" ng-app="app">
+<html ng-controller="AppCtrl as ctrl" ng-app="app" md-theme="{{ dynamicTheme }}" md-theme-watch>
 
 <head>
     <title>dc.js - Row Chart Example</title>
@@ -13,26 +13,46 @@
 </head>
 
 <body>
-    <h2 class="md-toolbar-tools" layout-align="center center">
-        <span>Infectious Diseases-related disease cases among California</span>
-    </h2>
-    <md-divider></md-divider>
-    <div layout="row" layout-align="center center">
-        <div flex>
-            <md-subheader class="md-warn">Select Disease:</md-subheader>
-            <md-content class="md-padding" style="height: 500px; width: 280px;" md-theme="altTheme">
-                <md-radio-group ng-model="ctrl.diseaseSelected" ng-change="ctrl.filteredSelected('2005')">
+    <md-toolbar md-whiteframe="8" layout="row">
+        <h1 class="md-toolbar-tools">Infectious Diseases-related disease cases among California</h1>
+    </md-toolbar>
+    <section layout="row" flex layout-md style="height: 605px">
+        <!-- menu to select diseases -->
+        <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')"
+            md-disable-backdrop="" md-whiteframe="4">
+            <md-toolbar class="md-accent">
+                <h1 class="md-toolbar-tools">Select Disease</h1>
+            </md-toolbar>
+            <md-content class="md-padding" style="height: 500px; width: 280px;">
+                <md-radio-group ng-model="ctrl.diseaseSelected" ng-change="ctrl.filter('2005')">
                     <md-radio-button ng-repeat="disease in ctrl.diseases" ng-value="disease">
                         {{ disease }}
                     </md-radio-button>
                     <md-divider ng-if="!$last"></md-divider>
                 </md-radio-group>
             </md-content>
-        </div>
-        <div flex>
-            <div id="map"></div>
-        </div>
-    </div>
+        </md-sidenav>
+        <!-- graphs -->
+        <md-content flex="" layout-padding="">
+            <div layout="row" layout-fill>
+                <div flex>
+                    <md-card>
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-subhead">Gender distribution</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-content layout="row" layout-align="space-between">
+                            <div id="sex-distribution"></div>
+                        </md-card-content>
+                    </md-card>
+                </div>
+                <div flex>
+                    <div id="map"></div>
+                </div>
+            </div>
+        </md-content>
+    </section>
     <!-- remote application dependencies -->
     <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>
     <script type="text/javascript" src="node_modules/fetch/lib/fetch.js"></script>
