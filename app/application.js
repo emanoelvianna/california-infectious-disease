@@ -24,6 +24,7 @@
     var self = this;
     self.diseases = [];
     self.diseaseSelected = undefined;
+    self.preventable = false;
     self.yearSelected = undefined;
 
     self.infectiousDiseaseData;
@@ -57,7 +58,7 @@
 
     function _buildDistributionInMap() {
       var width = 450;
-      var height = 550;
+      var height = 470;
 
       var projection = d3.geoMercator()
         .scale(1000 * 2)
@@ -121,7 +122,7 @@
 
       var margin = { top: 10, right: 5, bottom: 30, left: 50 };
       var width = 300;
-      var height = 100;
+      var height = 50;
 
       var bar = d3.select('#sex-distribution')
         .append('svg')
@@ -161,10 +162,16 @@
     }
 
     function filter(yearSelected) {
-      var filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
-        if (_condition(self.diseaseSelected, yearSelected, data))
-          return data;
-      });
+      var filteredDiseases;
+
+      if (self.preventable)
+        filteredDiseases = _preventableDiseasesByVaccines();
+      else {
+        filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
+          if (_condition(self.diseaseSelected, yearSelected, data))
+            return data;
+        });
+      }
 
       _distributionFilterBySex(filteredDiseases);
 
@@ -200,6 +207,10 @@
       }
       self.barSize = self.distributionBySex[0].value > self.distributionBySex[1].value ? self.distributionBySex[0].value : self.distributionBySex[1].value
       _buildDistributionChartAboutSex();
+    }
+
+    function _preventableDiseasesByVaccines() {
+      // TODO:
     }
 
     function _condition(diseaseSelected, yearSelected, data) {

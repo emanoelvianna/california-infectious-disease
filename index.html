@@ -21,6 +21,15 @@
         <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')"
             md-disable-backdrop="" md-whiteframe="4">
             <md-toolbar class="md-accent">
+                <h1 class="md-toolbar-tools">Select Options</h1>
+            </md-toolbar>
+            <md-content layout-align="center center" layout-padding style="height: 100px">
+                <md-checkbox ng-model="ctrl.preventable" flex layout-md>
+                    Vaccine-preventable diseases
+                </md-checkbox>
+                <md-divider></md-divider>
+            </md-content>
+            <md-toolbar class="md-accent">
                 <h1 class="md-toolbar-tools">Select Disease</h1>
             </md-toolbar>
             <md-content class="md-padding" style="height: 500px; width: 280px;">
@@ -33,7 +42,7 @@
             </md-content>
         </md-sidenav>
         <!-- graphs -->
-        <md-content flex="" layout-padding="">
+        <md-content flex layout-padding>
             <div layout="row" layout-fill>
                 <div flex>
                     <md-card>
@@ -42,13 +51,22 @@
                                 <span class="md-subhead">Gender distribution</span>
                             </md-card-title-text>
                         </md-card-title>
-                        <md-card-content layout="row" layout-align="space-between">
+                        <md-card-content layout="row">
                             <div id="sex-distribution"></div>
                         </md-card-content>
                     </md-card>
                 </div>
                 <div flex>
-                    <div id="map"></div>
+                    <md-card>
+                        <md-card-title>
+                            <md-card-title-text>
+                                <span class="md-subhead">Distribution in county</span>
+                            </md-card-title-text>
+                        </md-card-title>
+                        <md-card-content layout="row">
+                            <div id="map"></div>
+                        </md-card-content>
+                    </md-card>
                 </div>
             </div>
         </md-content>
