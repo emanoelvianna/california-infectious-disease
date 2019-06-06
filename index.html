@@ -13,34 +13,32 @@
 </head>
 
 <body>
-    <md-toolbar md-whiteframe="8" layout="row">
-        <h1 class="md-toolbar-tools">Infectious Diseases-related disease cases among California</h1>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <md-autocomplete flex layout-md
+                md-no-cache="ctrl.noCache"
+                md-selected-item="ctrl.diseaseSelected" 
+                md-search-text-change="ctrl.searchTextChange(ctrl.searchText)"
+                md-search-text="ctrl.searchText" 
+                md-selected-item-change="ctrl.selectedItemChange(item)"
+                md-items="item in ctrl.querySearch(ctrl.searchText)" 
+                md-item-text="item" 
+                md-min-length="0"
+                placeholder="Ex. Dengue" 
+                input-aria-labelledby="favoriteStateLabel"
+                input-aria-describedby="autocompleteDetailedDescription">
+                <md-item-template>
+                    <span md-highlight-text="ctrl.searchText" md-highlight-flags="^i">{{item}}</span>
+                </md-item-template>
+                <md-not-found>
+                    No states matching "{{ctrl.searchText}}" were found.
+                    <a ng-click="ctrl.newState(ctrl.searchText)">Create a new one!</a>
+                </md-not-found>
+            </md-autocomplete>
+        </div>
     </md-toolbar>
+
     <section layout="row" flex layout-md style="height: 605px">
-        <!-- menu to select diseases -->
-        <md-sidenav class="md-sidenav-left" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')"
-            md-disable-backdrop="" md-whiteframe="4">
-            <md-toolbar class="md-accent">
-                <h1 class="md-toolbar-tools">Select Options</h1>
-            </md-toolbar>
-            <md-content layout-align="center center" layout-padding style="height: 100px">
-                <md-checkbox ng-model="ctrl.preventable" flex layout-md>
-                    Vaccine-preventable diseases
-                </md-checkbox>
-                <md-divider></md-divider>
-            </md-content>
-            <md-toolbar class="md-accent">
-                <h1 class="md-toolbar-tools">Select Disease</h1>
-            </md-toolbar>
-            <md-content class="md-padding" style="height: 500px; width: 280px;">
-                <md-radio-group ng-model="ctrl.diseaseSelected" ng-change="ctrl.filter('2005')">
-                    <md-radio-button ng-repeat="disease in ctrl.diseases" ng-value="disease">
-                        {{ disease }}
-                    </md-radio-button>
-                    <md-divider ng-if="!$last"></md-divider>
-                </md-radio-group>
-            </md-content>
-        </md-sidenav>
         <!-- graphs -->
         <md-content flex layout-padding>
             <div layout="row" layout-fill>
@@ -66,7 +64,7 @@
                                     </md-card-title-text>
                                 </md-card-title>
                                 <md-card-content layout="row">
-                                    <div id="sex-distribution"></div>
+                                    <!-- <div id="sex-distribution"></div> -->
                                 </md-card-content>
                             </md-card>
                         </div>
@@ -100,12 +98,9 @@
         </md-content>
     </section>
 
-    <div id="time-chart" style="width:500px; height:300px" class="md-padding">
-        <div class="reset" style="visibility: hidden;">range: <span class="filter"></span>
-            <a href="javascript:spendHistChart.filterAll();dc.redrawAll();">reset</a>
-        </div>
-    </div>
+    <div id="time-chart"></div>
 
+    <div id="sex-distribution"></div>
 
     <!-- remote application dependencies -->
     <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>

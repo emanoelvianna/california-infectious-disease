@@ -6,11 +6,12 @@
 
   Controller.$inject = [
     '$q',
+    '$log',
     '$scope',
     'resource.LoadingScreenService'
   ];
 
-  function Controller($q, $scope, LoadingScreenService) {
+  function Controller($q, $log, $scope, LoadingScreenService) {
     const COLORS = {
       INFECTED: '#ff6f69',
       FREE: '#88d8b0',
@@ -23,14 +24,18 @@
     var years;
     var spendHist;
     var dateFormat;
-    var dateDim;
+    var sex;
+    var distributionPerYear;
+    var volumeChart;
+    var moveChart;
+    var volumeByYearsGroup;
 
     /* public variables */
     var self = this;
     self.diseases = [];
     self.diseaseSelected = undefined;
-    self.preventable = false;
     self.yearSelected = undefined;
+    self.simulateQuery = false;
 
     self.infectiousDiseaseData;
     self.distributionBySex;
@@ -39,6 +44,9 @@
     /* Lifecycle hooks */
     self.$onInit = onInit;
     self.filter = filter;
+    self.querySearch = querySearch;
+    self.selectedItemChange = selectedItemChange;
+    self.searchTextChange = searchTextChange;
 
     function onInit() {
       LoadingScreenService.start();
@@ -46,16 +54,54 @@
         self.infectiousDiseaseData = data;
 
         ndx = crossfilter(self.infectiousDiseaseData);
-        years = ndx.dimension(function (d) { return + d.Year; });
+        years = ndx.dimension(function (d) {
+          return d.Year;
+        });
+        sex = ndx.dimension(function (d) {
+          return d.Sex;
+        });
+
         spendHist = years.group().reduceCount();
+        distributionPerYear = years.group().reduceSum(function (d) { return +d.Spent; });
+
+        volumeByYearsGroup = years.group().reduceSum(function (d) {
+          return d.Year;
+        });
 
         _buildDistributionInMap();
         _setDiseaseList();
         filter('2005');
-        _timeline();
-        _buildDistributionChartAboutSex();
+        // _timeline();
+        // _buildDistributionChartAboutSex();
         LoadingScreenService.finish();
       });
+    }
+
+    function querySearch(query) {
+      var results = query ? self.diseases.filter(createFilterFor(query)) : self.diseases, deferred;
+      if (self.simulateQuery) {
+        deferred = $q.defer();
+        $timeout(function () { deferred.resolve(results); }, Math.random() * 1000, false);
+        return deferred.promise;
+      } else {
+        return results;
+      }
+    }
+
+    function createFilterFor(query) {
+      var lowercaseQuery = query.toLowerCase();
+      return function filterFn(disease) {
+        return (disease.toLowerCase().indexOf(lowercaseQuery) === 0);
+      };
+    }
+
+    function searchTextChange(text) {
+      $log.info('Text changed to ' + text);
+    }
+
+    function selectedItemChange(item) {
+      filter('2005');
+      $log.info('Item changed to ' + JSON.stringify(item));
     }
 
     function _setDiseaseList() {
@@ -129,77 +175,53 @@
     }
 
     function _timeline() {
-      var spendHistChart = dc.barChart("#time-chart");
-      spendHistChart
+      volumeChart = dc.lineChart('#time-chart');
+      volumeChart
+        .width(990) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
+        .height(40)
+        .margins({ top: 0, right: 50, bottom: 20, left: 40 })
         .dimension(years)
-        .group(spendHist)
-        .x(d3.scaleLinear().domain([2000, 2018]))
-        .elasticY(true)
-        .controlsUseVisibility(true);
+        .group(volumeByYearsGroup)
+        .centerBar(true)
+        .gap(1)
+        .x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+        .round(d3.timeMonth.round)
+        .alwaysUseRounding(true)
+        .xUnits(d3.timeMonths);
 
-      spendHistChart.xAxis().tickFormat(function (d) {
-        return d;
-      });
-      spendHistChart.yAxis().ticks(10);
+      moveChart = dc.lineChart('#sex-distribution');
+      moveChart
+        .renderArea(true)
+        .width(990)
+        .height(200)
+        .transitionDuration(1000)
+        .margins({ top: 30, right: 50, bottom: 25, left: 40 })
+        .dimension(sex)
+        .mouseZoomable(true)
+        // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
+        .rangeChart(volumeChart)
+        .x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+        .round(d3.timeMonth.round)
+        .xUnits(d3.timeMonths)
+        .elasticY(true)
+        .renderHorizontalGridLines(true)
 
       dc.renderAll();
     }
 
     function _buildDistributionChartAboutSex() {
-      d3.select('#sex-distribution').selectAll('*').remove();
 
-      var margin = { top: 10, right: 5, bottom: 30, left: 50 };
-      var width = 300;
-      var height = 50;
-
-      var bar = d3.select('#sex-distribution')
-        .append('svg')
-        .attr('width', width + margin.left + margin.right)
-        .attr('height', height + margin.top + margin.bottom)
-        .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-      var x = d3.scaleLinear()
-        .domain([0, self.barSize]) // TODO:
-        .range([0, width]);
-      bar.append('g')
-        .attr('transform', 'translate(0,' + height + ')')
-        .call(d3.axisBottom(x))
-        .selectAll('text')
-        .attr('transform', 'translate(-10,0)rotate(-45)')
-        .style('text-anchor', 'end');
-
-      // Y axis
-      var y = d3.scaleBand()
-        .range([0, height])
-        .domain(self.distributionBySex.map(function (d) { return d.sex; }))
-        .padding(.1);
-      bar.append('g')
-        .call(d3.axisLeft(y))
-
-      //Bars
-      bar.selectAll('myRect')
-        .data(self.distributionBySex)
-        .enter()
-        .append('rect')
-        .attr('x', x(0))
-        .attr('y', function (d) { return y(d.sex); })
-        .attr('width', function (d) { return x(d.value); })
-        .attr('height', y.bandwidth())
-        .attr('fill', '#69b3a2')
     }
 
     function filter(yearSelected) {
       var filteredDiseases;
 
-      if (self.preventable)
-        filteredDiseases = _preventableDiseasesByVaccines();
-      else {
-        filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
-          if (_condition(self.diseaseSelected, yearSelected, data))
-            return data;
-        });
-      }
+      console.log(self.diseaseSelected);
+
+      filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
+        if (_condition(self.diseaseSelected, yearSelected, data))
+          return data;
+      });
 
       _distributionFilterBySex(filteredDiseases);
 
