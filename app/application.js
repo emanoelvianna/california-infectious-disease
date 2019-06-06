@@ -19,7 +19,12 @@
     };
     var map;
     var bar;
-    var _deferred = $q.defer();
+    var ndx;
+    var years;
+    var spendHist;
+    var dateFormat;
+    var dateDim;
+
     /* public variables */
     var self = this;
     self.diseases = [];
@@ -39,9 +44,15 @@
       LoadingScreenService.start();
       d3.csv('data/infectious-disease-data.csv').then(function (data) {
         self.infectiousDiseaseData = data;
+
+        ndx = crossfilter(self.infectiousDiseaseData);
+        years = ndx.dimension(function (d) { return + d.Year; });
+        spendHist = years.group().reduceCount();
+
         _buildDistributionInMap();
         _setDiseaseList();
         filter('2005');
+        _timeline();
         _buildDistributionChartAboutSex();
         LoadingScreenService.finish();
       });
@@ -115,6 +126,23 @@
         /* legend to the map */
         // TODO:
       });
+    }
+
+    function _timeline() {
+      var spendHistChart = dc.barChart("#time-chart");
+      spendHistChart
+        .dimension(years)
+        .group(spendHist)
+        .x(d3.scaleLinear().domain([2000, 2018]))
+        .elasticY(true)
+        .controlsUseVisibility(true);
+
+      spendHistChart.xAxis().tickFormat(function (d) {
+        return d;
+      });
+      spendHistChart.yAxis().ticks(10);
+
+      dc.renderAll();
     }
 
     function _buildDistributionChartAboutSex() {

@@ -45,16 +45,44 @@
         <md-content flex layout-padding>
             <div layout="row" layout-fill>
                 <div flex>
-                    <md-card>
-                        <md-card-title>
-                            <md-card-title-text>
-                                <span class="md-subhead">Gender distribution</span>
-                            </md-card-title-text>
-                        </md-card-title>
-                        <md-card-content layout="row">
-                            <div id="sex-distribution"></div>
-                        </md-card-content>
-                    </md-card>
+                    <div layout="column" layout-align="center center">
+                        <div>
+                            <md-card>
+                                <md-card-title>
+                                    <md-card-title-text>
+                                        <span class="md-subhead">Timeline</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-content layout="row">
+                                    <!-- <div id="time-chart"></div> -->
+                                </md-card-content>
+                            </md-card>
+                        </div>
+                        <div>
+                            <md-card>
+                                <md-card-title>
+                                    <md-card-title-text>
+                                        <span class="md-subhead">Gender distribution</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-content layout="row">
+                                    <div id="sex-distribution"></div>
+                                </md-card-content>
+                            </md-card>
+                        </div>
+                        <div>
+                            <md-card>
+                                <md-card-title>
+                                    <md-card-title-text>
+                                        <span class="md-subhead">Timeline distribution in county</span>
+                                    </md-card-title-text>
+                                </md-card-title>
+                                <md-card-content layout="row">
+                                    <div id="timeline-distribution"></div>
+                                </md-card-content>
+                            </md-card>
+                        </div>
+                    </div>
                 </div>
                 <div flex>
                     <md-card>
@@ -71,6 +99,14 @@
             </div>
         </md-content>
     </section>
+
+    <div id="time-chart" style="width:500px; height:300px" class="md-padding">
+        <div class="reset" style="visibility: hidden;">range: <span class="filter"></span>
+            <a href="javascript:spendHistChart.filterAll();dc.redrawAll();">reset</a>
+        </div>
+    </div>
+
+
     <!-- remote application dependencies -->
     <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>
     <script type="text/javascript" src="node_modules/fetch/lib/fetch.js"></script>
