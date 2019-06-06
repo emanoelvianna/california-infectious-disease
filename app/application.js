@@ -163,45 +163,32 @@
     }
 
     function _timeline() {
-      years = ndx.dimension(function (d) { return + d.Year; });
-      spendPerYear = years.group().reduceSum(function (d) {
-        if (d.Sex === 'Total' && d.Disease === self.diseaseSelected)
+      var moveYears = ndx.dimension(function (d) {
+        return d.Year;
+      });
+
+      var totalByYear = moveYears.group().reduceSum(function (d) {
+        if (d.Sex === "Total" && d.Disease === self.diseaseSelected)
           return + d.Count;
+        return + 0;
       });
-      spendHistChart = dc.barChart("#time-chart");
-      spendHistChart
-        .width(590)
+
+      var volumeChart = dc.barChart('#time-chart');
+      volumeChart
+        .width(400)
         .height(100)
-        .dimension(years)
-        .group(spendPerYear)
-        .x(d3.scaleLinear().domain([2000, 2018]))
+        .margins({ top: 0, right: 50, bottom: 20, left: 50 })
+        .dimension(moveYears)
+        .group(totalByYear)
+        .centerBar(true)
+        .gap(1)
+        .x(d3.scaleLinear()
+          .domain([2000, 2018]))
         .elasticY(true)
-        .controlsUseVisibility(true);
+        // .round(d3.timeYear.round)
+        // .alwaysUseRounding(true)
+        .xUnits(d3.timeYears);
 
-      spendHistChart.xAxis().tickFormat(function (d) {
-        return d;
-      });
-      spendHistChart.yAxis().ticks(10);
-
-      sex = ndx.dimension(function (d) {
-        return d.Sex;
-      });
-      moveChart = dc.lineChart('#sex-distribution');
-      moveChart
-        .renderArea(true)
-        .width(990)
-        .height(200)
-        .transitionDuration(1000)
-        .margins({ top: 30, right: 50, bottom: 25, left: 40 })
-        .dimension(sex)
-        .mouseZoomable(true)
-        // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
-        .rangeChart(spendHistChart)
-        .x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
-        .round(d3.timeMonth.round)
-        .xUnits(d3.timeMonths)
-        .elasticY(true)
-        .renderHorizontalGridLines(true)
 
       dc.renderAll();
     }
