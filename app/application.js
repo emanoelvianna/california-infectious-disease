@@ -26,9 +26,10 @@
     var dateFormat;
     var sex;
     var distributionPerYear;
-    var volumeChart;
+    var spendHistChart;
     var moveChart;
     var volumeByYearsGroup;
+    var spendPerYear;
 
     /* public variables */
     var self = this;
@@ -54,24 +55,11 @@
         self.infectiousDiseaseData = data;
 
         ndx = crossfilter(self.infectiousDiseaseData);
-        years = ndx.dimension(function (d) {
-          return d.Year;
-        });
-        sex = ndx.dimension(function (d) {
-          return d.Sex;
-        });
-
-        spendHist = years.group().reduceCount();
-        distributionPerYear = years.group().reduceSum(function (d) { return +d.Spent; });
-
-        volumeByYearsGroup = years.group().reduceSum(function (d) {
-          return d.Year;
-        });
 
         _buildDistributionInMap();
         _setDiseaseList();
         filter('2005');
-        // _timeline();
+        _timeline();
         // _buildDistributionChartAboutSex();
         LoadingScreenService.finish();
       });
@@ -175,20 +163,29 @@
     }
 
     function _timeline() {
-      volumeChart = dc.lineChart('#time-chart');
-      volumeChart
-        .width(990) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
-        .height(40)
-        .margins({ top: 0, right: 50, bottom: 20, left: 40 })
+      years = ndx.dimension(function (d) { return + d.Year; });
+      spendPerYear = years.group().reduceSum(function (d) {
+        if (d.Sex === 'Total' && d.Disease === self.diseaseSelected)
+          return + d.Count;
+      });
+      spendHistChart = dc.barChart("#time-chart");
+      spendHistChart
+        .width(590)
+        .height(100)
         .dimension(years)
-        .group(volumeByYearsGroup)
-        .centerBar(true)
-        .gap(1)
-        .x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
-        .round(d3.timeMonth.round)
-        .alwaysUseRounding(true)
-        .xUnits(d3.timeMonths);
+        .group(spendPerYear)
+        .x(d3.scaleLinear().domain([2000, 2018]))
+        .elasticY(true)
+        .controlsUseVisibility(true);
 
+      spendHistChart.xAxis().tickFormat(function (d) {
+        return d;
+      });
+      spendHistChart.yAxis().ticks(10);
+
+      sex = ndx.dimension(function (d) {
+        return d.Sex;
+      });
       moveChart = dc.lineChart('#sex-distribution');
       moveChart
         .renderArea(true)
@@ -199,7 +196,7 @@
         .dimension(sex)
         .mouseZoomable(true)
         // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
-        .rangeChart(volumeChart)
+        .rangeChart(spendHistChart)
         .x(d3.scaleTime().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
         .round(d3.timeMonth.round)
         .xUnits(d3.timeMonths)
@@ -215,8 +212,6 @@
 
     function filter(yearSelected) {
       var filteredDiseases;
-
-      console.log(self.diseaseSelected);
 
       filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
         if (_condition(self.diseaseSelected, yearSelected, data))
