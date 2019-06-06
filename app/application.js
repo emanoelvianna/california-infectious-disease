@@ -189,6 +189,24 @@
         // .alwaysUseRounding(true)
         .xUnits(d3.timeYears);
 
+      var x = dc.lineChart('#sex-distribution', 'chartGroup');
+      x /* dc.lineChart('#monthly-move-chart', 'chartGroup') */
+        .renderArea(true)
+        .width(400)
+        .height(400)
+        .transitionDuration(1000)
+        .margins({ top: 30, right: 50, bottom: 25, left: 40 })
+        .dimension(moveYears)
+        .mouseZoomable(true)
+        // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
+        .rangeChart(volumeChart)
+        .x(d3.scaleLinear()
+        .domain([2000, 2018]))
+        // .round(d3.timeMonth.round)
+        .xUnits(d3.timeYears)
+        .elasticY(true)
+        // .renderHorizontalGridLines(true)
+
 
       dc.renderAll();
     }
