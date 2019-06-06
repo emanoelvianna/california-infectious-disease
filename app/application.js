@@ -114,12 +114,12 @@
     }
 
     function _buildDistributionInMap() {
-      var width = 450;
+      var width = 550;
       var height = 470;
 
       var projection = d3.geoMercator()
         .scale(1000 * 2)
-        .center([-120, 37])
+        .center([-122, 37])
         .translate([width / 2, height / 2]);
 
       var path = d3.geoPath()
@@ -149,7 +149,7 @@
               .duration(200)
               .style('opacity', .9);
             div.html(d.properties.fullName)
-              .style('left', (d3.event.pageX - 350) + 'px')
+              .style('left', (d3.event.pageX - 100) + 'px')
               .style('top', (d3.event.pageY - 30) + 'px');
           })
           .on('mouseout', function (d) {
