@@ -100,12 +100,17 @@
     function selectedItemChange(item) {
       if (self.diseaseSelected != null)
       {
-        filter();
-        _buildDistributionChartAboutSex();
-        _buildCountyTimelineChart();
+        uptadeCharts();
       }
 
       $log.info('Item changed to ' + JSON.stringify(item));
+    }
+
+    function uptadeCharts()
+    {
+      filter();
+      _buildDistributionChartAboutSex();
+      _buildCountyTimelineChart();
     }
 
     function _setDiseaseList() {
