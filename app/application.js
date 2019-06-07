@@ -45,6 +45,10 @@
     self.distributionBySexRange;
     self.barSize;
 
+    /* Charts */
+    self.sexDistributionChart;
+    self.countyTimelineChart;
+
     /* Lifecycle hooks */
     self.$onInit = onInit;
     self.filter = filter;
@@ -91,7 +95,12 @@
     }
 
     function selectedItemChange(item) {
-      filter('2005');
+      if (self.diseaseSelected != null)
+      {
+        filter();
+        _buildDistributionChartAboutSex();
+      }
+
       $log.info('Item changed to ' + JSON.stringify(item));
     }
 
@@ -104,13 +113,33 @@
       $scope.$apply();
     }
     function _buildDistributionChartAboutSex() {
+      // Clear the last Chart
+      var svg = d3.select("#sex-distribution");
+      svg.selectAll("*").remove();
+
+      // Data Adjustment
+      var highestYValue = 0;
+      var dataTemp2 = new Array();
+      for (var i = yearFilterStart; i < yearFilterEnd; i ++)
+      {
+        dataTemp2.push({year: i, 
+          male: self.distributionBySexRange[i - yearFilterStart][0].value,
+          female: self.distributionBySexRange[i - yearFilterStart][1].value})
+
+        // Find the Highest Y Value
+        if (self.distributionBySexRange[i - yearFilterStart][0].value > highestYValue)
+          highestYValue = self.distributionBySexRange[i - yearFilterStart][0].value;
+        if (self.distributionBySexRange[i - yearFilterStart][1].value > highestYValue)
+          highestYValue = self.distributionBySexRange[i - yearFilterStart][1].value;
+      }
+
       // Margin configuration
       var margin = {top: 10, right: 40, bottom: 30, left: 40},
         width = 550 - margin.left - margin.right,
         height = 250 - margin.top - margin.bottom;
 
       // Append the SVG Object
-      var svg = d3.select("#sex-distribution")
+      self.sexDistributionChart = d3.select("#sex-distribution")
         .append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
@@ -123,24 +152,17 @@
         .domain([yearFilterStart,yearFilterEnd])
         .range([ 0, width ]);
       var yAxis = d3.scaleLinear()
-        .domain( [0, 1000])
+        .domain( [0, highestYValue])
         .range([ height, 0 ]);
-      svg.append("g")
+      self.sexDistributionChart.append("g")
         .attr("transform", "translate(0," + height + ")")
         .call(d3.axisBottom(xAxis));
-      svg.append("g")
+      self.sexDistributionChart.append("g")
         .call(d3.axisLeft(yAxis));
 
-      // Data Adjustment
-      var dataTemp2 = new Array();
-      for (var i = yearFilterStart; i < yearFilterEnd; i ++)
-      {
-        dataTemp2.push({year: i, 
-          male: self.distributionBySexRange[i - yearFilterStart][0].value,
-          female: self.distributionBySexRange[i - yearFilterStart][1].value})
-      }
+     
       // Male Plot
-      svg
+      self.sexDistributionChart
         .append("g")
         .selectAll("dot")
         .data(dataTemp2)
@@ -150,7 +172,7 @@
           .attr("cy", function(d) { return yAxis(d.male) } )
           .attr("r", 5)
           .attr("fill", maleColor)
-      svg.append("path")
+      self.sexDistributionChart.append("path")
         .datum(dataTemp2)
           .attr("fill", "none")
           .attr("stroke", maleColor)
@@ -160,7 +182,7 @@
             .y(function(d) { return yAxis(d.male) })
             );
       // Female Plot
-      svg
+      self.sexDistributionChart
         .append("g")
         .selectAll("dot")
         .data(dataTemp2)
@@ -170,7 +192,7 @@
           .attr("cy", function(d) { return yAxis(d.female) } )
           .attr("r", 5)
           .attr("fill", femaleColor);
-      svg.append("path")
+      self.sexDistributionChart.append("path")
         .datum(dataTemp2)
           .attr("fill", "none")
           .attr("stroke",   femaleColor)
@@ -179,6 +201,27 @@
             .x(function(d) { return xAxis(d.year) })
             .y(function(d) { return yAxis(d.female) })
             );
+      /*// County Plot
+      self.sexDistributionChart
+        .append("g")
+        .selectAll("dot")
+        .data(dataTemp2)
+        .enter()
+        .append("circle")
+          .attr("cx", function(d) { return xAxis(d.year) } )
+          .attr("cy", function(d) { return yAxis(d.male + d.female) } )
+          .attr("r", 5)
+          .attr("fill", maleColor)
+      self.sexDistributionChart.append("path")
+        .datum(dataTemp2)
+          .attr("fill", "none")
+          .attr("stroke", maleColor)
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return xAxis(d.year) })
+            .y(function(d) { return yAxis(d.male + d.female) })
+            );
+            */
     }
     function _buildDistributionInMap() {
       var width = 550;
@@ -280,7 +323,6 @@
         if (_conditionRange(self.diseaseSelected, data))
           return data;
       });
-
       _distributionFilterBySexRange(filteredDiseases);
 
       map.selectAll('.subunit')
@@ -300,15 +342,19 @@
           }
         });
     }
+
+    //
     function _distributionFilterBySexRange(filteredDiseases) {
+      // Create and Array[i][j], i = Year, j = object with gender and values for each one
       self.distributionBySexRange = new Array (yearFilterEnd - yearFilterStart);
       for (var i=0; i <self.distributionBySexRange.length; i++)
       {
-        self.distributionBySexRange[i]=new Array(2);
+        self.distributionBySexRange[i]= new Array(2);
         self.distributionBySexRange[i][0] = { sex: 'Male', value: 0 };
         self.distributionBySexRange[i][1] = { sex: 'Female', value: 0 };
       }
 
+      // Iterate through the filtered objects
       for (var i = 0; i < filteredDiseases.length; i++) {
         if (filteredDiseases[i].Sex === 'Male') {
           self.distributionBySexRange[Number(filteredDiseases[i].Year) - yearFilterStart][0].value += Number(filteredDiseases[i].Count);
