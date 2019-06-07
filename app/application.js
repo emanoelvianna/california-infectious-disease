@@ -30,7 +30,10 @@
     var moveChart;
     var volumeByYearsGroup;
     var spendPerYear;
-
+    var maleColor = '#357df2';
+    var femaleColor = '#db2e3c';
+    var yearFilterStart = 2000;
+    var yearFilterEnd = 2018;
     /* public variables */
     var self = this;
     self.diseases = [];
@@ -39,7 +42,7 @@
     self.simulateQuery = false;
 
     self.infectiousDiseaseData;
-    self.distributionBySex;
+    self.distributionBySexRange;
     self.barSize;
 
     /* Lifecycle hooks */
@@ -51,16 +54,16 @@
 
     function onInit() {
       LoadingScreenService.start();
+      
       d3.csv('data/infectious-disease-data.csv').then(function (data) {
         self.infectiousDiseaseData = data;
-
         ndx = crossfilter(self.infectiousDiseaseData);
 
         _buildDistributionInMap();
         _setDiseaseList();
-        filter('2005');
+        filter();
+        _buildDistributionChartAboutSex();
         _timeline();
-        // _buildDistributionChartAboutSex();
         LoadingScreenService.finish();
       });
     }
@@ -100,7 +103,83 @@
       self.diseaseSelected = self.diseases[0];
       $scope.$apply();
     }
+    function _buildDistributionChartAboutSex() {
+      // Margin configuration
+      var margin = {top: 10, right: 40, bottom: 30, left: 40},
+        width = 550 - margin.left - margin.right,
+        height = 250 - margin.top - margin.bottom;
 
+      // Append the SVG Object
+      var svg = d3.select("#sex-distribution")
+        .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+          .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+      // Axis Setup
+      var xAxis = d3.scaleLinear()
+        .domain([yearFilterStart,yearFilterEnd])
+        .range([ 0, width ]);
+      var yAxis = d3.scaleLinear()
+        .domain( [0, 1000])
+        .range([ height, 0 ]);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xAxis));
+      svg.append("g")
+        .call(d3.axisLeft(yAxis));
+
+      // Data Adjustment
+      var dataTemp2 = new Array();
+      for (var i = yearFilterStart; i < yearFilterEnd; i ++)
+      {
+        dataTemp2.push({year: i, 
+          male: self.distributionBySexRange[i - yearFilterStart][0].value,
+          female: self.distributionBySexRange[i - yearFilterStart][1].value})
+      }
+      // Male Plot
+      svg
+        .append("g")
+        .selectAll("dot")
+        .data(dataTemp2)
+        .enter()
+        .append("circle")
+          .attr("cx", function(d) { return xAxis(d.year) } )
+          .attr("cy", function(d) { return yAxis(d.male) } )
+          .attr("r", 5)
+          .attr("fill", maleColor)
+      svg.append("path")
+        .datum(dataTemp2)
+          .attr("fill", "none")
+          .attr("stroke", maleColor)
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return xAxis(d.year) })
+            .y(function(d) { return yAxis(d.male) })
+            );
+      // Female Plot
+      svg
+        .append("g")
+        .selectAll("dot")
+        .data(dataTemp2)
+        .enter()
+        .append("circle")
+          .attr("cx", function(d) { return xAxis(d.year) } )
+          .attr("cy", function(d) { return yAxis(d.female) } )
+          .attr("r", 5)
+          .attr("fill", femaleColor);
+      svg.append("path")
+        .datum(dataTemp2)
+          .attr("fill", "none")
+          .attr("stroke",   femaleColor)
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function(d) { return xAxis(d.year) })
+            .y(function(d) { return yAxis(d.female) })
+            );
+    }
     function _buildDistributionInMap() {
       var width = 550;
       var height = 470;
@@ -189,41 +268,20 @@
         // .alwaysUseRounding(true)
         .xUnits(d3.timeYears);
 
-      var x = dc.lineChart('#sex-distribution', 'chartGroup');
-      x /* dc.lineChart('#monthly-move-chart', 'chartGroup') */
-        .renderArea(true)
-        .width(400)
-        .height(400)
-        .transitionDuration(1000)
-        .margins({ top: 30, right: 50, bottom: 25, left: 40 })
-        .dimension(moveYears)
-        .mouseZoomable(true)
-        // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
-        .rangeChart(volumeChart)
-        .x(d3.scaleLinear()
-        .domain([2000, 2018]))
-        // .round(d3.timeMonth.round)
-        .xUnits(d3.timeYears)
-        .elasticY(true)
-        // .renderHorizontalGridLines(true)
-
-
       dc.renderAll();
     }
 
-    function _buildDistributionChartAboutSex() {
+    
 
-    }
-
-    function filter(yearSelected) {
+    function filter() {
       var filteredDiseases;
 
       filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
-        if (_condition(self.diseaseSelected, yearSelected, data))
+        if (_conditionRange(self.diseaseSelected, data))
           return data;
       });
 
-      _distributionFilterBySex(filteredDiseases);
+      _distributionFilterBySexRange(filteredDiseases);
 
       map.selectAll('.subunit')
         .style('fill', function (d) {
@@ -242,21 +300,24 @@
           }
         });
     }
+    function _distributionFilterBySexRange(filteredDiseases) {
+      self.distributionBySexRange = new Array (yearFilterEnd - yearFilterStart);
+      for (var i=0; i <self.distributionBySexRange.length; i++)
+      {
+        self.distributionBySexRange[i]=new Array(2);
+        self.distributionBySexRange[i][0] = { sex: 'Male', value: 0 };
+        self.distributionBySexRange[i][1] = { sex: 'Female', value: 0 };
+      }
 
-    function _distributionFilterBySex(filteredDiseases) {
-      self.distributionBySex = [
-        { sex: 'Male', value: 0 },
-        { sex: 'Female', value: 0 }
-      ];
       for (var i = 0; i < filteredDiseases.length; i++) {
         if (filteredDiseases[i].Sex === 'Male') {
-          self.distributionBySex[0].value += Number(filteredDiseases[i].Count);
+          self.distributionBySexRange[Number(filteredDiseases[i].Year) - yearFilterStart][0].value += Number(filteredDiseases[i].Count);
         } else if (filteredDiseases[i].Sex === 'Female') {
-          self.distributionBySex[1].value += Number(filteredDiseases[i].Count);
+          self.distributionBySexRange[Number(filteredDiseases[i].Year) - yearFilterStart][1].value += Number(filteredDiseases[i].Count);
         }
       }
-      self.barSize = self.distributionBySex[0].value > self.distributionBySex[1].value ? self.distributionBySex[0].value : self.distributionBySex[1].value
-      _buildDistributionChartAboutSex();
+      // ??? Não sei o que isso faz - Gabriel
+      //self.barSize = self.distributionBySex[0].value > self.distributionBySex[1].value ? self.distributionBySex[0].value : self.distributionBySex[1].value 
     }
 
     function _preventableDiseasesByVaccines() {
@@ -265,6 +326,12 @@
 
     function _condition(diseaseSelected, yearSelected, data) {
       return diseaseSelected === data.Disease && data.Year === yearSelected;
+    }
+    function _conditionRange(diseaseSelected, data) {
+      return diseaseSelected === data.Disease && data.Year >= yearFilterStart && data.Year <= yearFilterEnd;
+    }
+    function _conditionRangeCounty(diseaseSelected,  data) {
+      return diseaseSelected === data.Disease && data.Year >= yearFilterStart && data.Year <= yearFilterEnd;
     }
   }
 }());
