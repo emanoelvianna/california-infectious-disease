@@ -30,6 +30,10 @@
     var moveChart;
     var volumeByYearsGroup;
     var spendPerYear;
+    var yearFilterStart = 2000;
+    var yearFilterEnd = 2005;
+    var highestYValueGender = 0;
+    var highestYValueCounty = 0;
 
     /* public variables */
     var self = this;
@@ -146,7 +150,8 @@
               .style('opacity', 0.0);
           })
           .on('click', function (d) {
-            console.log(d);
+            self.countySelected = d.properties.name;
+            filter('2005');
           });
 
         /* exterior border */
@@ -181,6 +186,8 @@
         .fill('#2196f3')
         .on('onchange', val => {
           d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
+          yearFilterStart = val.map(d3.timeFormat('%Y'))[0];
+          yearFilterEnd = val.map(d3.timeFormat('%Y'))[1];
         });
 
       var gRange = d3
@@ -202,7 +209,78 @@
     }
 
     function _buildDistributionChartAboutSex() {
+      // Clear the last Chart
+      self.sexDistributionChart = d3.select("#sex-distribution");
+      self.sexDistributionChart.selectAll("*").remove();
 
+      // Margin configuration
+      var margin = { top: 10, right: 40, bottom: 30, left: 40 },
+        width = 550 - margin.left - margin.right,
+        height = 250 - margin.top - margin.bottom;
+
+      // Append the SVG Object
+      self.sexDistributionChart = d3.select("#sex-distribution")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+      // Axis Setup
+      var xAxis = d3.scaleLinear()
+        .domain([yearFilterStart, yearFilterEnd])
+        .range([0, width]);
+      var yAxis = d3.scaleLinear()
+        .domain([0, highestYValueGender])
+        .range([height, 0]);
+      self.sexDistributionChart.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xAxis));
+      self.sexDistributionChart.append("g")
+        .call(d3.axisLeft(yAxis));
+
+
+      // Male Plot
+      self.sexDistributionChart
+        .append("g")
+        .selectAll("dot")
+        .data(self.filteredData)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return xAxis(d.year) })
+        .attr("cy", function (d) { return yAxis(d.male) })
+        .attr("r", 5)
+        .attr("fill", maleColor)
+      self.sexDistributionChart.append("path")
+        .datum(self.filteredData)
+        .attr("fill", "none")
+        .attr("stroke", maleColor)
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function (d) { return xAxis(d.year) })
+          .y(function (d) { return yAxis(d.male) })
+        );
+      // Female Plot
+      self.sexDistributionChart
+        .append("g")
+        .selectAll("dot")
+        .data(self.filteredData)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return xAxis(d.year) })
+        .attr("cy", function (d) { return yAxis(d.female) })
+        .attr("r", 5)
+        .attr("fill", femaleColor);
+      self.sexDistributionChart.append("path")
+        .datum(self.filteredData)
+        .attr("fill", "none")
+        .attr("stroke", femaleColor)
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function (d) { return xAxis(d.year) })
+          .y(function (d) { return yAxis(d.female) })
+        );
     }
 
     function filter(yearSelected) {
@@ -229,6 +307,10 @@
                 return '#2db7e2';
               }
             }
+
+            if (self.countySelected === d.properties.name) {
+              return '#000000';
+            }
           }
         });
     }
@@ -246,7 +328,7 @@
         }
       }
       self.barSize = self.distributionBySex[0].value > self.distributionBySex[1].value ? self.distributionBySex[0].value : self.distributionBySex[1].value
-      _buildDistributionChartAboutSex();
+      //_buildDistributionChartAboutSex();
     }
 
     function _condition(diseaseSelected, yearSelected, data) {
