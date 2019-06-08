@@ -10,16 +10,8 @@
     <link href="node_modules/dc/dc.min.css" rel="stylesheet">
     <link rel="stylesheet" href="app/stylesheet/styles.css" type="text/css">
     <link rel="stylesheet" href="app/stylesheet/please-wait-style.css" type="text/css">
-    
 </head>
-<style>
-    .line {
-        fill: none;
-        stroke: steelblue;
-        stroke-width: 2px;
-    }
-    
-    </style>
+
 <body>
     <md-toolbar>
         <div class="md-toolbar-tools">
@@ -46,11 +38,15 @@
                         <md-card>
                             <md-card-title>
                                 <md-card-title-text>
-                                    <span class="md-subhead">Timeline</span>
+                                    <span class="md-subhead">Gender distribution</span>
                                 </md-card-title-text>
                             </md-card-title>
-                            <md-card-content layout="row">
-                                <div id="time-chart"></div>
+                            <md-card-content>
+                                <div class="col-sm">
+                                    <div class="col-sm">
+                                        <div id="slider-range"></div>
+                                    </div>
+                                </div>
                             </md-card-content>
                         </md-card>
                     </div>
@@ -80,7 +76,7 @@
                     </div>
                 </div>
             </div>
-            <!-- <div flex>
+            <div flex>
                 <md-card>
                     <md-card-title>
                         <md-card-title-text>
@@ -91,8 +87,7 @@
                         <div id="map"></div>
                     </md-card-content>
                 </md-card>
-            </div> -->
-            
+            </div>
         </div>
     </md-content>
     <!-- remote application dependencies -->
@@ -107,6 +102,7 @@
     <script type="text/javascript" src="node_modules/angular-aria/angular-aria.min.js"></script>
     <script type="text/javascript" src="node_modules/angular-material/angular-material.min.js"></script>
     <script type="text/javascript" src="node_modules/please-wait/build/please-wait.min.js"></script>
+    <script type="text/javascript" src="node_modules/d3-simple-slider/dist/d3-simple-slider.min.js"></script>
     <!-- local application dependencies -->
     <script type="text/javascript" src="app/resource/module.js"></script>
     <script type="text;javascript" src="app/resource/loading-screen-service.js"></script>
