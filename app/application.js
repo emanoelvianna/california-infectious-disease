@@ -103,7 +103,7 @@
 
     function _buildDistributionInMap() {
       var width = 550;
-      var height = 470;
+      var height = 460;
 
       var projection = d3.geoMercator()
         .scale(1000 * 2)
@@ -144,6 +144,9 @@
             div.transition()
               .duration(500)
               .style('opacity', 0.0);
+          })
+          .on('click', function (d) {
+            console.log(d);
           });
 
         /* exterior border */
@@ -163,52 +166,35 @@
     }
 
     function _timeline() {
-      var moveYears = ndx.dimension(function (d) {
-        return d.Year;
+      // Time
+      var dataTime = d3.range(0, 17).map(function (d) {
+        return new Date(2000 + d, 0, 1);
       });
 
-      var totalByYear = moveYears.group().reduceSum(function (d) {
-        if (d.Sex === "Total" && d.Disease === self.diseaseSelected)
-          return + d.Count;
-        return + 0;
-      });
-
-      var volumeChart = dc.barChart('#time-chart');
-      volumeChart
+      var sliderTime = d3
+        .sliderBottom()
+        .min(d3.min(dataTime))
+        .max(d3.max(dataTime))
+        .step(1000 * 60 * 60 * 24 * 365)
         .width(400)
-        .height(100)
-        .margins({ top: 0, right: 50, bottom: 20, left: 50 })
-        .dimension(moveYears)
-        .group(totalByYear)
-        .centerBar(true)
-        .gap(1)
-        .x(d3.scaleLinear()
-          .domain([2000, 2018]))
-        .elasticY(true)
-        // .round(d3.timeYear.round)
-        // .alwaysUseRounding(true)
-        .xUnits(d3.timeYears);
+        .tickFormat(d3.timeFormat('%Y'))
+        .tickValues(dataTime)
+        .default(new Date(1998, 10, 3))
+        .on('onchange', val => {
+          // d3.select('p#value-time').text(d3.timeFormat('%Y')(val));
+        });
 
-      var x = dc.lineChart('#sex-distribution', 'chartGroup');
-      x /* dc.lineChart('#monthly-move-chart', 'chartGroup') */
-        .renderArea(true)
-        .width(400)
-        .height(400)
-        .transitionDuration(1000)
-        .margins({ top: 30, right: 50, bottom: 25, left: 40 })
-        .dimension(moveYears)
-        .mouseZoomable(true)
-        // Specify a "range chart" to link its brush extent with the zoom of the current "focus chart".
-        .rangeChart(volumeChart)
-        .x(d3.scaleLinear()
-        .domain([2000, 2018]))
-        // .round(d3.timeMonth.round)
-        .xUnits(d3.timeYears)
-        .elasticY(true)
-        // .renderHorizontalGridLines(true)
+      var gTime = d3
+        .select('div#slider-time')
+        .append('svg')
+        .attr('width', 500)
+        .attr('height', 100)
+        .append('g')
+        .attr('transform', 'translate(30,30)');
 
+      gTime.call(sliderTime);
 
-      dc.renderAll();
+      d3.select('p#value-time').text(d3.timeFormat('%Y')(sliderTime.value()));
     }
 
     function _buildDistributionChartAboutSex() {
@@ -257,10 +243,6 @@
       }
       self.barSize = self.distributionBySex[0].value > self.distributionBySex[1].value ? self.distributionBySex[0].value : self.distributionBySex[1].value
       _buildDistributionChartAboutSex();
-    }
-
-    function _preventableDiseasesByVaccines() {
-      // TODO:
     }
 
     function _condition(diseaseSelected, yearSelected, data) {
