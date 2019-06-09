@@ -12,16 +12,14 @@
   ];
 
   function Controller($q, $log, $scope, LoadingScreenService) {
-    const COLORS = {
+    const MAP_COLORS = {
       SELECTED: '#000000',
       INFECTED: '#ff6f69',
       SUSCEPTIBLE: '#ffcc5c',
       FREE: '#88d8b0'
     };
-
-    var maleColor = '#357df2';
-    var femaleColor = '#db2e3c';
-    var countyColor = '#40ce66';
+    const MALE_COLOR = '#357df2';
+    const FEMALE_COLOR = '#db2e3c';
 
     var map;
     var yearFilterStart = 2000;
@@ -53,7 +51,8 @@
         _buildDistributionInMap();
         _setDiseaseList();
         _timeline();
-        // _buildDistributionChartAboutSex();
+        _buildDistributionChartAboutSex();
+        _updateChart();
         LoadingScreenService.finish();
       });
     }
@@ -102,8 +101,8 @@
           return data;
       });
 
-      // _distributionFilterBySexRange(filteredDiseases);
-      // _updateFilteredData(filteredDiseases);
+      _distributionFilterBySexRange(filteredDiseases);
+      _updateFilteredData(filteredDiseases);
       _updateColorsInMap(filteredDiseases);
     }
 
@@ -134,28 +133,7 @@
       }
     }
 
-    function _updateColorsInMap(filteredDiseases) {
-      map.selectAll('.subunit')
-        .style('fill', function (d) {
-          for (var i = 0; i < filteredDiseases.length; i++) {
-            if (filteredDiseases[i].County === d.properties.name) {
-              if (filteredDiseases[i].upper < '0.898') {
-                return COLORS.FREE;
-              } else if (filteredDiseases[i].upper < '2.801') {
-                return COLORS.SUSCEPTIBLE;
-              } else {
-                return COLORS.INFECTED;
-              }
-            }
-
-            if (countySelected === d.properties.name) {
-              return '#000000';
-            }
-          }
-        });
-    }
-
-    function _updateFilteredData() {
+    function _updateFilteredData(filteredDiseases) {
       // Data Adjustment
       highestYValueGender = 0;
       highestYValueCounty = 0;
@@ -179,6 +157,27 @@
           highestYValueCounty = self.distributionBySexRange[i - yearFilterStart][2].value;
         }
       }
+    }
+
+    function _updateColorsInMap(filteredDiseases) {
+      map.selectAll('.subunit')
+        .style('fill', function (d) {
+          for (var i = 0; i < filteredDiseases.length; i++) {
+            if (filteredDiseases[i].County === d.properties.name) {
+              if (filteredDiseases[i].upper < '0.898') {
+                return MAP_COLORS.FREE;
+              } else if (filteredDiseases[i].upper < '2.801') {
+                return MAP_COLORS.SUSCEPTIBLE;
+              } else {
+                return MAP_COLORS.INFECTED;
+              }
+            }
+
+            if (countySelected === d.properties.name) {
+              return MAP_COLORS.SELECTED;
+            }
+          }
+        });
     }
 
     function _buildDistributionChartAboutSex() {
@@ -224,11 +223,11 @@
         .attr("cx", function (d) { return xAxis(d.year) })
         .attr("cy", function (d) { return yAxis(d.male) })
         .attr("r", 5)
-        .attr("fill", maleColor)
+        .attr("fill", MALE_COLOR)
       sexDistributionChart.append("path")
         .datum(self.filteredData)
         .attr("fill", "none")
-        .attr("stroke", maleColor)
+        .attr("stroke", MALE_COLOR)
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
           .x(function (d) { return xAxis(d.year) })
@@ -244,11 +243,11 @@
         .attr("cx", function (d) { return xAxis(d.year) })
         .attr("cy", function (d) { return yAxis(d.female) })
         .attr("r", 5)
-        .attr("fill", femaleColor);
+        .attr("fill", FEMALE_COLOR);
       sexDistributionChart.append("path")
         .datum(self.filteredData)
         .attr("fill", "none")
-        .attr("stroke", femaleColor)
+        .attr("stroke", FEMALE_COLOR)
         .attr("stroke-width", 1.5)
         .attr("d", d3.line()
           .x(function (d) { return xAxis(d.year) })
@@ -257,8 +256,8 @@
     }
 
     function _timeline() {
-      var dataTime = d3.range(0, 17).map(function (d) {
-        return new Date(2000 + d, 0, 1);
+      var dataTime = d3.range(0, 16).map(function (d) {
+        return new Date(2001 + d, 0, 1);
       });
 
       var sliderRange = d3
@@ -268,7 +267,7 @@
         .width(400)
         .tickFormat(d3.timeFormat('%Y'))
         .tickValues(dataTime)
-        .default([new Date(2000, 0, 1), new Date(2005, 0, 1)])
+        .default([new Date(2001, 0, 1), new Date(2005, 0, 1)])
         .fill('#2196f3')
         .on('onchange', val => {
           d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
@@ -359,8 +358,9 @@
 
         /* legend to the map */
         // TODO:
+
+        _updateChart();
       });
     }
-
   }
 }());
