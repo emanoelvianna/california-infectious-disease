@@ -20,14 +20,16 @@
     };
     const MALE_COLOR = '#357df2';
     const FEMALE_COLOR = '#db2e3c';
+    const COUNTY_COLOR = '#40ce66';
 
     var map;
-    var yearFilterStart = 2000;
+    var yearFilterStart = 2001;
     var yearFilterEnd = 2005;
-    var countySelected = undefined;
+    var countySelected = 'Sierra';
     var highestYValueGender = 0;
     var highestYValueCounty = 0;
     var simulateQuery = false;
+    var distributionData = new Map();
     var filteredData = undefined;
 
     /* public variables */
@@ -49,9 +51,10 @@
       d3.csv('data/infectious-disease-data.csv').then(function (data) {
         self.infectiousDiseaseData = data;
         _buildDistributionInMap();
-        _setDiseaseList();
         _timeline();
+        _setDiseaseList();
         _buildDistributionChartAboutSex();
+        _buildCountyTimelineChart();
         _updateChart();
         LoadingScreenService.finish();
       });
@@ -102,7 +105,7 @@
       });
 
       _distributionFilterBySexRange(filteredDiseases);
-      _updateFilteredData(filteredDiseases);
+      _updateFilteredData();
       _updateColorsInMap(filteredDiseases);
     }
 
@@ -113,48 +116,51 @@
 
     function _distributionFilterBySexRange(filteredDiseases) {
       // Create and Array[i][j], i = Year, j = object with gender and values for each one
-      self.distributionBySexRange = new Array(yearFilterEnd - yearFilterStart);
-      for (var i = 0; i < self.distributionBySexRange.length; i++) {
-        self.distributionBySexRange[i] = new Array(2);
-        self.distributionBySexRange[i][0] = { sex: 'Male', value: 0 };
-        self.distributionBySexRange[i][1] = { sex: 'Female', value: 0 };
-        self.distributionBySexRange[i][2] = { sex: 'County', value: 0 };
+      for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
+        distributionData.set(currentYear, {
+          male: 0,
+          female: 0,
+          county: 0
+        });
       }
 
-      // Iterate through the filtered objects
-      for (var i = 0; i < filteredDiseases.length; i++) {
-        if (filteredDiseases[i].Sex === 'Male' && filteredDiseases[i].County === countySelected) {
-          self.distributionBySexRange[Number(filteredDiseases[i].Year) - yearFilterStart][0].value += Number(filteredDiseases[i].Count);
-        } else if (filteredDiseases[i].Sex === 'Female' && filteredDiseases[i].County === countySelected) {
-          self.distributionBySexRange[Number(filteredDiseases[i].Year) - yearFilterStart][1].value += Number(filteredDiseases[i].Count);
-        } else if (filteredDiseases[i].Sex === 'Total' && filteredDiseases[i].County != countySelected) {
-          self.distributionBySexRange[(Number(filteredDiseases[i].Year) - 1) - yearFilterStart][2].value += Number(filteredDiseases[i].Count);
+      filteredDiseases.filter(function (disease) {
+        if (disease.County === countySelected) {
+          if (disease.Sex === 'Male') {
+            var data = distributionData.get(Number(disease.Year));
+            data.male += Number(disease.Count);
+            distributionData.set(Number(disease.Year), data);
+          } else if (disease.Sex === 'Female') {
+            var data = distributionData.get(Number(disease.Year));
+            data.female += Number(disease.Count);
+            distributionData.set(Number(disease.Year), data);
+          } else {
+            var data = distributionData.get(Number(disease.Year));
+            data.county += Number(disease.Count);
+            console.log(data.county);
+            distributionData.set(Number(disease.Year), data);
+          }
         }
-      }
+      });
     }
 
-    function _updateFilteredData(filteredDiseases) {
-      // Data Adjustment
-      highestYValueGender = 0;
-      highestYValueCounty = 0;
-
+    function _updateFilteredData() {
       self.filteredData = new Array();
-      for (var i = yearFilterStart; i < yearFilterEnd; i++) {
+      for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         self.filteredData.push({
-          year: i,
-          male: self.distributionBySexRange[i - yearFilterStart][0].value,
-          female: self.distributionBySexRange[i - yearFilterStart][1].value,
-          county: self.distributionBySexRange[i - yearFilterStart][2].value
+          year: currentYear,
+          male: distributionData.get(currentYear).male,
+          female: distributionData.get(currentYear).female,
+          county: distributionData.get(currentYear).county
         });
 
         // Find the Highest Y Value
-        if (self.distributionBySexRange[i - yearFilterStart][0].value > highestYValueGender)
-          highestYValueGender = self.distributionBySexRange[i - yearFilterStart][0].value;
-        if (self.distributionBySexRange[i - yearFilterStart][1].value > highestYValueGender)
-          highestYValueGender = self.distributionBySexRange[i - yearFilterStart][1].value;
-        if (self.distributionBySexRange[i - yearFilterStart][2].value > highestYValueCounty) {
-
-          highestYValueCounty = self.distributionBySexRange[i - yearFilterStart][2].value;
+        if (distributionData.get(currentYear).male > highestYValueGender)
+          highestYValueGender = distributionData.get(currentYear).male;
+        if (distributionData.get(currentYear).female > highestYValueGender)
+          highestYValueGender = distributionData.get(currentYear).female;
+        if (distributionData.get(currentYear).county > highestYValueCounty) {
+          highestYValueCounty = distributionData.get(currentYear).county;
         }
       }
     }
@@ -178,6 +184,60 @@
             }
           }
         });
+    }
+
+    function _buildCountyTimelineChart() {
+      // Clear the last Chart
+      d3.select('#timeline-distribution').selectAll("*").remove();
+      var countyTimelineChart = d3.select("#timeline-distribution");
+
+      // Margin configuration
+      var margin = { top: 10, right: 40, bottom: 30, left: 40 },
+        width = 550 - margin.left - margin.right,
+        height = 250 - margin.top - margin.bottom;
+
+      // Append the SVG Object
+      countyTimelineChart = d3.select("#timeline-distribution")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+      // Axis Setup
+      var xAxis = d3.scaleLinear()
+        .domain([yearFilterStart, yearFilterEnd])
+        .range([0, width]);
+      var yAxis = d3.scaleLinear()
+        .domain([0, highestYValueCounty])
+        .range([height, 0]);
+      countyTimelineChart.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(xAxis));
+      countyTimelineChart.append("g")
+        .call(d3.axisLeft(yAxis));
+
+      // County Plot
+      countyTimelineChart
+        .append("g")
+        .selectAll("dot")
+        .data(self.filteredData)
+        .enter()
+        .append("circle")
+        .attr("cx", function (d) { return xAxis(d.year) })
+        .attr("cy", function (d) { return yAxis(d.county) })
+        .attr("r", 5)
+        .attr("fill", COUNTY_COLOR)
+      countyTimelineChart.append("path")
+        .datum(self.filteredData)
+        .attr("fill", "none")
+        .attr("stroke", COUNTY_COLOR)
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function (d) { return xAxis(d.year) })
+          .y(function (d) { return yAxis(d.county) })
+        );
     }
 
     function _buildDistributionChartAboutSex() {
@@ -322,8 +382,6 @@
           .enter()
           .append('path')
           .attr('class', function (d) {
-            if (!countySelected)
-              countySelected = d.properties.name;
             return 'subunit ' + d.properties.name;
           })
           .attr('d', path)
