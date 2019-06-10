@@ -30,15 +30,44 @@
             </md-autocomplete>
         </div>
     </md-toolbar>
-    <md-content flex layout-padding>
-        <div layout="row" layout-fill>
+    <md-content layout-padding class="md-padding">
+
+        <div layout="row" layout-sm="column">
             <div flex>
-                <div layout="column" layout-align="center center">
-                    <div>
-                        <md-card>
+                <div layout="column" layout-xs="column">
+                    <div flex>
+                        <md-card md-theme-watch>
                             <md-card-title>
                                 <md-card-title-text>
-                                    <span class="md-subhead">Gender distribution</span>
+                                    <span class="md-headline">Timeline of Diseases</span>
+                                </md-card-title-text>
+                            </md-card-title>
+                            <md-card-content>
+                                <div id="sex-distribution"></div>
+                            </md-card-content>
+                        </md-card>
+                    </div>
+                    <div flex>
+                        <md-card md-theme-watch>
+                            <md-card-title>
+                                <md-card-title-text>
+                                    <span class="md-headline">Timeline of Diseases</span>
+                                </md-card-title-text>
+                            </md-card-title>
+                            <md-card-content>
+                                <div id="timeline-distribution"></div>
+                            </md-card-content>
+                        </md-card>
+                    </div>
+                </div>
+            </div>
+            <div flex>
+                <div layout="column" layout-xs="column">
+                    <div flex>
+                        <md-card md-theme-watch>
+                            <md-card-title>
+                                <md-card-title-text>
+                                    <span class="md-headline">Timeline of Diseases</span>
                                 </md-card-title-text>
                             </md-card-title>
                             <md-card-content>
@@ -50,45 +79,22 @@
                             </md-card-content>
                         </md-card>
                     </div>
-                    <div>
-                        <md-card>
+                    <div flex>
+                        <md-card md-theme-watch>
                             <md-card-title>
                                 <md-card-title-text>
-                                    <span class="md-subhead">Gender distribution</span>
+                                    <span class="md-headline">Timeline of Diseases</span>
                                 </md-card-title-text>
                             </md-card-title>
-                            <md-card-content layout="row">
-                                <div id="sex-distribution"></div>
-                            </md-card-content>
-                        </md-card>
-                    </div>
-                    <div>
-                        <md-card>
-                            <md-card-title>
-                                <md-card-title-text>
-                                    <span class="md-subhead">Timeline distribution in county</span>
-                                </md-card-title-text>
-                            </md-card-title>
-                            <md-card-content layout="row">
-                                <div id="timeline-distribution"></div>
+                            <md-card-content>
+                                <div id="map"></div>
                             </md-card-content>
                         </md-card>
                     </div>
                 </div>
             </div>
-            <div flex>
-                <md-card>
-                    <md-card-title>
-                        <md-card-title-text>
-                            <span class="md-subhead">Distribution in county</span>
-                        </md-card-title-text>
-                    </md-card-title>
-                    <md-card-content layout="row">
-                        <div id="map"></div>
-                    </md-card-content>
-                </md-card>
-            </div>
         </div>
+
     </md-content>
     <!-- remote application dependencies -->
     <script type="text/javascript" src="node_modules/promise-polyfill/dist/polyfill.min.js"></script>

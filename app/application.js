@@ -36,9 +36,8 @@
     var self = this;
     self.diseases = [];
     self.diseaseSelected = undefined;
-
     self.infectiousDiseaseData;
-    self.distributionBySex;
+    self.totalAmount = 0;
 
     /* Lifecycle hooks */
     self.$onInit = onInit;
@@ -55,7 +54,7 @@
         _setDiseaseList();
         _buildDistributionChartAboutSex();
         _buildCountyTimelineChart();
-        _updateChart();
+        _update();
         LoadingScreenService.finish();
       });
     }
@@ -83,7 +82,7 @@
     }
 
     function selectedItemChange(item) {
-      _updateChart();
+      _update();
       $log.info('Item changed to ' + JSON.stringify(item));
     }
 
@@ -96,7 +95,7 @@
       $scope.$apply();
     }
 
-    function _updateChart() {
+    function _update() {
       var filteredDiseases;
 
       filteredDiseases = self.infectiousDiseaseData.filter(function (data) {
@@ -104,10 +103,10 @@
           return data;
       });
 
-      _updateDistributionData(filteredDiseases);
+      _updateStatisticsData(filteredDiseases);
       _updateDataToCharts();
       _updateColorsInMap(filteredDiseases);
-
+      /* update charts */
       _buildDistributionChartAboutSex();
       _buildCountyTimelineChart();
     }
@@ -117,7 +116,7 @@
         (data.Year >= yearFilterStart && data.Year <= yearFilterEnd)
     }
 
-    function _updateDistributionData(filteredDiseases) {
+    function _updateStatisticsData(filteredDiseases) {
       // Create and Array[i][j], i = Year, j = object with gender and values for each one
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         distributionData.set(currentYear, {
@@ -127,8 +126,10 @@
         });
       }
 
+      self.totalAmount = 0;
       filteredDiseases.filter(function (disease) {
         if (disease.County === countySelected) {
+          /* gender statistics */
           if (disease.Sex === 'Male') {
             var data = distributionData.get(Number(disease.Year));
             data.male += Number(disease.Count);
@@ -141,6 +142,9 @@
             var data = distributionData.get(Number(disease.Year));
             data.county += Number(disease.Count);
             distributionData.set(Number(disease.Year), data);
+
+            /*  other stats */
+            self.totalAmount += Number(disease.Count);
           }
         }
       });
@@ -210,7 +214,7 @@
           d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
           yearFilterStart = val.map(d3.timeFormat('%Y'))[0];
           yearFilterEnd = val.map(d3.timeFormat('%Y'))[1];
-          _updateChart();
+          _update();
         });
 
       var gRange = d3
@@ -407,7 +411,7 @@
           })
           .on('click', function (d) {
             countySelected = d.properties.name;
-            _updateChart();
+            _update();
           });
 
         /* exterior border */
@@ -424,7 +428,7 @@
         /* legend to the map */
         // TODO:
 
-        _updateChart();
+        _update();
       });
     }
   }
