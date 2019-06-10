@@ -243,7 +243,7 @@
       // Margin configuration
       var margin = { top: 10, right: 40, bottom: 30, left: 40 },
         width = 550 - margin.left - margin.right,
-        height = 250 - margin.top - margin.bottom;
+        height = 280 - margin.top - margin.bottom;
 
       // Append the SVG Object
       countyTimelineChart = d3.select("#timeline-distribution")
@@ -297,7 +297,7 @@
       // Margin configuration
       var margin = { top: 10, right: 40, bottom: 30, left: 40 },
         width = 550 - margin.left - margin.right,
-        height = 250 - margin.top - margin.bottom;
+        height = 280 - margin.top - margin.bottom;
 
       // Append the SVG Object
       sexDistributionChart = d3.select("#sex-distribution")
