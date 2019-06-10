@@ -24,8 +24,8 @@
 
     var map;
     var yearFilterStart = 2001;
-    var yearFilterEnd = 2005;
-    var countySelected = 'Sierra';
+    var yearFilterEnd = 2010;
+    var countySelected = 'Siskiyou';
     var highestYValueGender = 0;
     var highestYValueCounty = 0;
     var simulateQuery = false;
@@ -91,7 +91,7 @@
         if (!self.diseases.includes(d.Disease))
           self.diseases.push(d.Disease);
       });
-      self.diseaseSelected = self.diseases[0];
+      self.diseaseSelected = self.diseases[8];
       $scope.$apply();
     }
 
@@ -208,7 +208,7 @@
         .width(400)
         .tickFormat(d3.timeFormat('%Y'))
         .tickValues(dataTime)
-        .default([new Date(2001, 0, 1), new Date(2005, 0, 1)])
+        .default([new Date(2001, 0, 1), new Date(2010, 0, 1)])
         .fill('#2196f3')
         .on('onchange', val => {
           d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
