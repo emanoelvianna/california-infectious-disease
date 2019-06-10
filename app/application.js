@@ -104,9 +104,14 @@
           return data;
       });
 
-      _distributionFilterBySexRange(filteredDiseases);
-      _updateFilteredData();
+      console.log('update!');
+
+      _updateDistributionData(filteredDiseases);
+      _updateDataToCharts();
       _updateColorsInMap(filteredDiseases);
+
+      _buildDistributionChartAboutSex();
+      _buildCountyTimelineChart();
     }
 
     function _condition(data) {
@@ -114,7 +119,7 @@
         (data.Year >= yearFilterStart && data.Year <= yearFilterEnd)
     }
 
-    function _distributionFilterBySexRange(filteredDiseases) {
+    function _updateDistributionData(filteredDiseases) {
       // Create and Array[i][j], i = Year, j = object with gender and values for each one
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         distributionData.set(currentYear, {
@@ -144,7 +149,7 @@
       });
     }
 
-    function _updateFilteredData() {
+    function _updateDataToCharts() {
       self.filteredData = new Array();
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         self.filteredData.push({
@@ -184,6 +189,46 @@
             }
           }
         });
+    }
+
+
+    function _timeline() {
+      var dataTime = d3.range(0, 16).map(function (d) {
+        return new Date(2001 + d, 0, 1);
+      });
+
+      var sliderRange = d3
+        .sliderBottom()
+        .min(d3.min(dataTime))
+        .max(d3.max(dataTime))
+        .width(400)
+        .tickFormat(d3.timeFormat('%Y'))
+        .tickValues(dataTime)
+        .default([new Date(2001, 0, 1), new Date(2005, 0, 1)])
+        .fill('#2196f3')
+        .on('onchange', val => {
+          d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
+          yearFilterStart = val.map(d3.timeFormat('%Y'))[0];
+          yearFilterEnd = val.map(d3.timeFormat('%Y'))[1];
+          _updateChart();
+        });
+
+      var gRange = d3
+        .select('div#slider-range')
+        .append('svg')
+        .attr('width', 500)
+        .attr('height', 100)
+        .append('g')
+        .attr('transform', 'translate(30,30)');
+
+      gRange.call(sliderRange);
+
+      d3.select('p#value-range').text(
+        sliderRange
+          .value()
+          .map(d3.timeFormat('%Y'))
+          .join('-')
+      );
     }
 
     function _buildCountyTimelineChart() {
@@ -315,46 +360,8 @@
         );
     }
 
-    function _timeline() {
-      var dataTime = d3.range(0, 16).map(function (d) {
-        return new Date(2001 + d, 0, 1);
-      });
-
-      var sliderRange = d3
-        .sliderBottom()
-        .min(d3.min(dataTime))
-        .max(d3.max(dataTime))
-        .width(400)
-        .tickFormat(d3.timeFormat('%Y'))
-        .tickValues(dataTime)
-        .default([new Date(2001, 0, 1), new Date(2005, 0, 1)])
-        .fill('#2196f3')
-        .on('onchange', val => {
-          d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
-          yearFilterStart = val.map(d3.timeFormat('%Y'))[0];
-          yearFilterEnd = val.map(d3.timeFormat('%Y'))[1];
-          _updateChart();
-        });
-
-      var gRange = d3
-        .select('div#slider-range')
-        .append('svg')
-        .attr('width', 500)
-        .attr('height', 100)
-        .append('g')
-        .attr('transform', 'translate(30,30)');
-
-      gRange.call(sliderRange);
-
-      d3.select('p#value-range').text(
-        sliderRange
-          .value()
-          .map(d3.timeFormat('%Y'))
-          .join('-')
-      );
-    }
-
     function _buildDistributionInMap() {
+      d3.select('#map').selectAll("*").remove();
       var width = 550;
       var height = 460;
 
