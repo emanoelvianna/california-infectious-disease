@@ -104,8 +104,6 @@
           return data;
       });
 
-      console.log('update!');
-
       _updateDistributionData(filteredDiseases);
       _updateDataToCharts();
       _updateColorsInMap(filteredDiseases);
@@ -142,7 +140,6 @@
           } else {
             var data = distributionData.get(Number(disease.Year));
             data.county += Number(disease.Count);
-            console.log(data.county);
             distributionData.set(Number(disease.Year), data);
           }
         }
@@ -150,6 +147,9 @@
     }
 
     function _updateDataToCharts() {
+      highestYValueGender = 0;
+      highestYValueCounty = 0;
+
       self.filteredData = new Array();
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         self.filteredData.push({
