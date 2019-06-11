@@ -179,17 +179,35 @@
     }
 
     function _updateColorsInMap(filteredDiseases) {
+      var highestCount = 0;
+      var countyCounts = {};
+      // Create a Dic with the sums for each county
+      for (var i = 0; i < filteredDiseases.length; i++) {
+        if (filteredDiseases[i].County != 'California' && filteredDiseases[i].Sex === 'Total')
+        {
+          if (countyCounts[filteredDiseases[i].County] == undefined)
+            countyCounts[filteredDiseases[i].County] = Number(0);
+          countyCounts[filteredDiseases[i].County] += Number(filteredDiseases[i].Count);
+        }
+      }
+      // Find the county with the higher number of cases
+      for (var key in countyCounts) {
+        if (countyCounts.hasOwnProperty(key)) { 
+          if(countyCounts[key] > highestCount)
+            highestCount = countyCounts[key];
+        }
+      }
       map.selectAll('.subunit')
         .style('fill', function (d) {
           if (countySelected === d.properties.name) {
             return MAP_COLORS.SELECTED;
           }
-
+          
           for (var i = 0; i < filteredDiseases.length; i++) {
             if (filteredDiseases[i].Sex === 'Total' && filteredDiseases[i].County === d.properties.name) {
-              var percent = ((filteredDiseases[i].Count / filteredDiseases[i].Population) * 100);
-              //console.log(percent.toFixed(2) * 50);
-              return _getColour('#ffffff', '#ff0000', percent.toFixed(5) * 10);
+              //var percent = ((filteredDiseases[i].Count / filteredDiseases[i].Population) * 100);
+              var percent = ((countyCounts[filteredDiseases[i].County] / highestCount));
+              return _getColour('#ffffff', '#ff0000', percent.toFixed(5));
             }
           }
         });
