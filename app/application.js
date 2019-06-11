@@ -28,6 +28,7 @@
     var countySelected = 'Siskiyou';
     var highestYValueGender = 0;
     var highestYValueCounty = 0;
+    var highestCount = 0;
     var simulateQuery = false;
     var distributionData = new Map();
     var filteredData = undefined;
@@ -105,10 +106,15 @@
 
       _updateStatisticsData(filteredDiseases);
       _updateDataToCharts();
+      
       _updateColorsInMap(filteredDiseases);
+      
+      //_buildDistributionInMap();
       /* update charts */
       _buildDistributionChartAboutSex();
       _buildCountyTimelineChart();
+      _updateMapHeatmapLegend();
+      
     }
 
     function _condition(data) {
@@ -179,15 +185,16 @@
     }
 
     function _updateColorsInMap(filteredDiseases) {
-      var highestCount = 0;
+      highestCount = 0;
       var countyCounts = {};
       // Create a Dic with the sums for each county
       for (var i = 0; i < filteredDiseases.length; i++) {
-        if (filteredDiseases[i].County != 'California' && filteredDiseases[i].Sex === 'Total')
+        if (filteredDiseases[i].County != 'California' && filteredDiseases[i].Sex === 'Total' &&
+        filteredDiseases[i].Year >= yearFilterStart && filteredDiseases[i].Year <= yearFilterEnd)
         {
           if (countyCounts[filteredDiseases[i].County] == undefined)
             countyCounts[filteredDiseases[i].County] = Number(0);
-          countyCounts[filteredDiseases[i].County] += Number(filteredDiseases[i].Count);
+            countyCounts[filteredDiseases[i].County] += Number(filteredDiseases[i].Count);
         }
       }
       // Find the county with the higher number of cases
@@ -206,7 +213,9 @@
           for (var i = 0; i < filteredDiseases.length; i++) {
             if (filteredDiseases[i].Sex === 'Total' && filteredDiseases[i].County === d.properties.name) {
               //var percent = ((filteredDiseases[i].Count / filteredDiseases[i].Population) * 100);
-              var percent = ((countyCounts[filteredDiseases[i].County] / highestCount));
+              var percent = countyCounts[filteredDiseases[i].County] / highestCount;
+              percent = _toQuadraticOut(percent);
+              //percent = 1 - (--percent * percent * percent * percent);
               return _getColour('#ffffff', '#ff0000', percent.toFixed(5));
             }
           }
@@ -478,8 +487,28 @@
 
     }
 
+    function _toQuadraticOut(percent) {
+      return percent *= (2-percent);
+    }
+
+    function _updateMapHeatmapLegend()
+    {
+      d3.select('#map').selectAll("text").remove();
+      var divisions = 10;
+      for (var i = 0; i < divisions; i++)
+      {
+        map.append("text")
+          .attr("x", 20).attr("y", 20 + i*(400/divisions))
+          .text(Math.floor((divisions - i) *(highestCount/divisions)))
+          .style("font-size", "15px")
+          .attr("alignment-baseline","middle")
+          .style("fill", 'white');
+      }
+    }
+
     function _buildDistributionInMap() {
       d3.select('#map').selectAll("*").remove();
+
       var width = 550;
       var height = 460;
 
@@ -494,7 +523,7 @@
       map = d3.select('#map').append('svg')
         .attr('width', width)
         .attr('height', height);
-
+      
       d3.json('data/california-map.json').then(function (ca) {
         map.append('path')
           .datum(topojson.feature(ca, ca.objects.subunits))
@@ -533,17 +562,30 @@
           .datum(topojson.mesh(ca, ca.objects.subunits, function (a, b) { return a === b; }))
           .attr('d', path)
           .attr('class', 'exterior-boundary');
-
+        
+        
         /* tooltop declaration */
         var div = d3.select('#map').append('div')
           .attr('class', 'tooltip')
           .style('opacity', 0);
 
         /* legend to the map */
-        // TODO:
-
+        var divisions = 100;
+        var percent = 0;
+        for (var i = 0; i < divisions; i++)
+        {
+          percent = (1-(i+1)/divisions);
+          map.append("rect")
+            .attr("x", 80)
+            .attr("y", i*Math.floor(400/divisions))
+            .attr("width", 50)
+            .attr("height", Math.ceil(400/divisions))
+            .style("fill", _getColour('#ffffff', '#ff0000', _toQuadraticOut(percent).toFixed(5)));
+        }
+        
         _update();
       });
+      
     }
   }
 }());
