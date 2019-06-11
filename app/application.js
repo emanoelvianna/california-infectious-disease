@@ -118,7 +118,6 @@
 
     function _updateStatisticsData(filteredDiseases) {
       // Create and Array[i][j], i = Year, j = object with gender and values for each one
-      
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         distributionData.set(currentYear, {
           male: 0,
@@ -162,7 +161,7 @@
       self.filteredData = new Array();
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         self.filteredData.push({
-          year: currentYear,
+          year: Number(currentYear),
           male: distributionData.get(currentYear).male,
           female: distributionData.get(currentYear).female,
           county: distributionData.get(currentYear).county
@@ -189,7 +188,7 @@
           for (var i = 0; i < filteredDiseases.length; i++) {
             if (filteredDiseases[i].Sex === 'Total' && filteredDiseases[i].County === d.properties.name) {
               var percent = ((filteredDiseases[i].Count / filteredDiseases[i].Population) * 100);
-              console.log(percent.toFixed(2) * 50);
+              //console.log(percent.toFixed(2) * 50);
               return _getColour('#ffffff', '#ff0000', percent.toFixed(5) * 10);
             }
           }
@@ -233,7 +232,7 @@
       if (diff_green.length == 1) diff_green = '0' + diff_green
       if (diff_blue.length == 1) diff_blue = '0' + diff_blue
 
-      console.log('#' + diff_red + diff_green + diff_blue);
+      //console.log('#' + diff_red + diff_green + diff_blue);
       return '#' + diff_red + diff_green + diff_blue;
     };
 
@@ -253,11 +252,10 @@
         .fill('#2196f3')
         .on('onchange', val => {
           d3.select('p#value-range').text(val.map(d3.timeFormat('%Y')).join('-'));
-          yearFilterStart = val.map(d3.timeFormat('%Y'))[0];
-          yearFilterEnd = val.map(d3.timeFormat('%Y'))[1];
+          yearFilterStart = Number(val.map(d3.timeFormat('%Y'))[0]);
+          yearFilterEnd = Number(val.map(d3.timeFormat('%Y'))[1]);
           _update();
         });
-
       var gRange = d3
         .select('div#slider-range')
         .append('svg')
@@ -365,7 +363,6 @@
         .append("g")
         .attr("transform",
           "translate(" + margin.left + "," + margin.top + ")");
-
       // Axis Setup
       var xAxis = d3.scaleLinear()
         .domain([yearFilterStart, yearFilterEnd])
