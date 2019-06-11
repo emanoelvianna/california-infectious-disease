@@ -118,6 +118,7 @@
 
     function _updateStatisticsData(filteredDiseases) {
       // Create and Array[i][j], i = Year, j = object with gender and values for each one
+      
       for (var currentYear = yearFilterStart; currentYear <= yearFilterEnd; currentYear++) {
         distributionData.set(currentYear, {
           male: 0,
@@ -130,6 +131,17 @@
       filteredDiseases.filter(function (disease) {
         if (disease.County === countySelected) {
           /* gender statistics */
+           if (disease.Sex === 'Total') {
+            var data = distributionData.get(Number(disease.Year));
+            data.county += Number(disease.Count);
+            distributionData.set(Number(disease.Year), data);
+
+            /*  other stats */
+            self.totalAmount += Number(disease.Count);
+          }
+        }
+        else if (disease.County === 'California')
+        {
           if (disease.Sex === 'Male') {
             var data = distributionData.get(Number(disease.Year));
             data.male += Number(disease.Count);
@@ -138,13 +150,6 @@
             var data = distributionData.get(Number(disease.Year));
             data.female += Number(disease.Count);
             distributionData.set(Number(disease.Year), data);
-          } else {
-            var data = distributionData.get(Number(disease.Year));
-            data.county += Number(disease.Count);
-            distributionData.set(Number(disease.Year), data);
-
-            /*  other stats */
-            self.totalAmount += Number(disease.Count);
           }
         }
       });
@@ -277,7 +282,7 @@
       var countyTimelineChart = d3.select("#timeline-distribution");
 
       // Margin configuration
-      var margin = { top: 10, right: 40, bottom: 30, left: 40 },
+      var margin = { top: 10, right: 40, bottom: 40, left: 70 },
         width = 550 - margin.left - margin.right,
         height = 280 - margin.top - margin.bottom;
 
@@ -299,9 +304,26 @@
         .range([height, 0]);
       countyTimelineChart.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xAxis));
+        .call(d3.axisBottom(xAxis)
+          .ticks(yearFilterEnd - yearFilterStart + 1));
       countyTimelineChart.append("g")
         .call(d3.axisLeft(yAxis));
+      countyTimelineChart.append("text")             
+        .attr("transform",
+              "translate(" + (width/2) + " ," + 
+                            (height + margin.top + 25) + ")")
+        .style("text-anchor", "middle")
+        .style("fill", 'white')
+        .text("Year");
+      // Axis Labels
+      countyTimelineChart.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("fill", 'white')
+        .text("Number of Cases"); 
 
       // County Plot
       countyTimelineChart
@@ -331,7 +353,7 @@
       var sexDistributionChart = d3.select("#sex-distribution");
 
       // Margin configuration
-      var margin = { top: 10, right: 40, bottom: 30, left: 40 },
+      var margin = { top: 10, right: 40, bottom: 40, left: 70 },
         width = 550 - margin.left - margin.right,
         height = 280 - margin.top - margin.bottom;
 
@@ -349,14 +371,30 @@
         .domain([yearFilterStart, yearFilterEnd])
         .range([0, width]);
       var yAxis = d3.scaleLinear()
-        .domain([0, highestYValueGender])
+        .domain([0, highestYValueGender * 1.2])
         .range([height, 0]);
       sexDistributionChart.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(xAxis));
+        .call(d3.axisBottom(xAxis)
+          .ticks(yearFilterEnd - yearFilterStart + 1));
       sexDistributionChart.append("g")
         .call(d3.axisLeft(yAxis));
-
+      // Axis Labels
+      sexDistributionChart.append("text")             
+        .attr("transform",
+              "translate(" + (width/2) + " ," + 
+                            (height + margin.top + 25) + ")")
+        .style("text-anchor", "middle")
+        .style("fill", 'white')
+        .text("Year");
+      sexDistributionChart.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("fill", 'white')
+        .text("Number of Cases"); 
 
       // Male Plot
       sexDistributionChart
@@ -398,6 +436,31 @@
           .x(function (d) { return xAxis(d.year) })
           .y(function (d) { return yAxis(d.female) })
         );
+      // Legend
+      sexDistributionChart.append("rect")
+        .attr("x", 10)
+        .attr("y", -10)
+        .attr("width", 75)
+        .attr("height", 40)
+        .attr("fill", "#303030")
+        .attr("id", "rectLabel");
+      sexDistributionChart.append("circle")
+        .attr("cx",20).attr("cy",0)
+        .attr("r", 6).style("fill", MALE_COLOR)
+      sexDistributionChart.append("circle")
+        .attr("cx",20).attr("cy",20)
+        .attr("r", 6).style("fill", FEMALE_COLOR)
+      sexDistributionChart.append("text")
+        .attr("x", 30).attr("y", 1)
+        .text("Male").style("font-size", "15px")
+        .attr("alignment-baseline","middle")
+        .style("fill", MALE_COLOR)
+      sexDistributionChart.append("text")
+        .attr("x", 30).attr("y", 21)
+        .text("Female").style("font-size", "15px")
+        .attr("alignment-baseline","middle")
+        .style("fill", FEMALE_COLOR)
+
     }
 
     function _buildDistributionInMap() {
